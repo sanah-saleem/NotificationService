@@ -30,6 +30,8 @@ public class Notification {
 
     public Notification(String message, String senderMail, String recieverMail) {
         this.message = message;
+        this.senderMail = senderMail;
+        this.recieverMail = recieverMail;
     }
 
 }
