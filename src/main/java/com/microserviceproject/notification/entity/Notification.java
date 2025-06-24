@@ -1,5 +1,6 @@
 package com.microserviceproject.notification.entity;
 
+import java.util.List;
 import java.util.UUID;
 
 import org.hibernate.annotations.UuidGenerator;
@@ -7,6 +8,7 @@ import org.hibernate.annotations.UuidGenerator;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -24,14 +26,16 @@ public class Notification {
 
     private String senderMail;
 
-    private String recieverMail;
+    @OneToMany
+    private List<Recipient> recipients;
+
+    private NotificationStatus status = NotificationStatus.PENDING;
 
     public Notification() {}
 
-    public Notification(String message, String senderMail, String recieverMail) {
+    public Notification(String message, String senderMail) {
         this.message = message;
         this.senderMail = senderMail;
-        this.recieverMail = recieverMail;
     }
 
 }

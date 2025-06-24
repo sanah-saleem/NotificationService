@@ -56,8 +56,9 @@
 		<dependency>
 			<groupId>org.postgresql</groupId>
 			<artifactId>postgresql</artifactId>
-			<scope>runtime</scope>
+			<version>42.7.3</version> <!-- or latest stable -->
 		</dependency>
+
 		<dependency>
 			<groupId>org.projectlombok</groupId>
 			<artifactId>lombok</artifactId>
@@ -104,6 +105,13 @@
 						</exclude>
 					</excludes>
 				</configuration>
+				<executions>
+					<execution>
+					<goals>
+						<goal>repackage</goal>
+					</goals>
+					</execution>
+				</executions>
 			</plugin>
 		</plugins>
 	</build>

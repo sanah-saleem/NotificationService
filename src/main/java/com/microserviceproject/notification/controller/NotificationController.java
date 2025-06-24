@@ -1,17 +1,17 @@
 package com.microserviceproject.notification.controller;
 
-import java.util.List;
-
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.microserviceproject.notification.entity.Notification;
-import com.microserviceproject.notification.repository.NotificationRepository;
+import com.microserviceproject.notification.dto.NotificationRequest;
+import com.microserviceproject.notification.service.NotificationService;
 
+import jakarta.mail.MessagingException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 
 
 
@@ -20,17 +20,17 @@ import org.springframework.web.bind.annotation.GetMapping;
 @RequestMapping("/api/notifications")
 public class NotificationController {
 
-    private final NotificationRepository notificationRepository;
+    @Autowired
+    private NotificationService notificationService; 
 
-    @PostMapping()
-    public Notification createNotification(@RequestBody Notification notification) {
-        return notificationRepository.save(notification);
+    @PostMapping("/email")
+    public ResponseEntity<String> sendEmailNotification(@RequestBody NotificationRequest request) throws MessagingException {
+        System.out.println("Entered controller");
+        if(notificationService.checkIncomingRequest(request)) {
+            notificationService.createAndSendNotification(request);
+            return ResponseEntity.ok("Notification Processed");  
+        }
+        return ResponseEntity.ok("Invalid input");
     } 
-
-    @GetMapping()
-    public List<Notification> getNotifications() {
-        return notificationRepository.findAll();
-    }
-    
     
 }
