@@ -8,9 +8,9 @@ import com.microserviceproject.notification.dto.NotificationRequest;
 import com.microserviceproject.notification.service.NotificationService;
 
 import jakarta.mail.MessagingException;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 
 
@@ -20,12 +20,11 @@ import org.springframework.http.ResponseEntity;
 @RequestMapping("/api/notifications")
 public class NotificationController {
 
-    @Autowired
-    private NotificationService notificationService; 
+    private final NotificationService notificationService; 
 
     @PostMapping("/email")
-    public ResponseEntity<String> sendEmailNotification(@RequestBody NotificationRequest request) throws MessagingException {
-        System.out.println("Entered controller");
+    public ResponseEntity<String> sendEmailNotification(@Valid @RequestBody NotificationRequest request) throws MessagingException {
+        System.out.println("Received notification request for recipient: " + request.getRecipient());
         if(notificationService.checkIncomingRequest(request)) {
             notificationService.createAndSendNotification(request);
             return ResponseEntity.ok("Notification Processed");  
