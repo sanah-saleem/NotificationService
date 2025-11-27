@@ -1,6 +1,7 @@
 package com.microserviceproject.notification.controller;
 
 import com.microserviceproject.notification.dto.EmailRequest;
+import com.microserviceproject.notification.integration.EmailNotificationProducer;
 import com.microserviceproject.notification.service.EmailService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -16,13 +17,13 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/notifications")
 public class NotificationController {
 
-    private final EmailService emailService;
+    private final EmailNotificationProducer producer;
 
     @PostMapping("/email")
     public ResponseEntity<String> sendEmail(@Valid @RequestBody EmailRequest request) {
-        emailService.sendEmail(request);
+        producer.sendEmailNotification(request);
         return ResponseEntity.status(HttpStatus.ACCEPTED)
-                .body("Email notification request accepted");
+                .body("Email notification queued for delivery");
     }
 
 }
