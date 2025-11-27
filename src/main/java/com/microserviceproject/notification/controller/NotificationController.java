@@ -24,12 +24,12 @@ public class NotificationController {
 
     @PostMapping("/email")
     public ResponseEntity<String> sendEmailNotification(@Valid @RequestBody NotificationRequest request) throws MessagingException {
-        System.out.println("Received notification request for recipient: " + request.getRecipient());
+        System.out.println("Received notification request for recipient: " + request.getRecipientEmail());
         if(notificationService.checkIncomingRequest(request)) {
             notificationService.createAndSendNotification(request);
             return ResponseEntity.ok("Notification Processed");  
         }
-        return ResponseEntity.ok("Invalid input");
+        return ResponseEntity.badRequest().body("Invalid input");
     } 
     
 }

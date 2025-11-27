@@ -1,24 +1,13 @@
 package com.microserviceproject.notification.dto;
 
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
 
-@Getter
-@Setter
-public class NotificationRequest {
-    
-    String message;
-    String senderEmail;
-    String recipientEmail;
-    String subject;
-
-    public NotificationRequest() {}
-
-    public NotificationRequest(String message, String senderEmail, String recipientEmail, String subject) {
-        this.message = message;
-        this.senderEmail = senderEmail;
-        this.recipientEmail = recipientEmail;
-        this.subject = subject;
-    }
-
-}
+public record NotificationRequest (
+        @NotBlank String message,
+        @Email @NotBlank String recipientEmail,
+        @NotBlank String subject
+) {}
