@@ -22,8 +22,8 @@ public class EmailNotificationProducer {
     }
 
     public void sendEmailNotification(EmailRequest emailRequest) {
-        log.info("Publishing email notification to Kafka topic {} for recipient {}",
-                emailTopicName, emailRequest.to());
+        log.info("Publishing email notification to Kafka topic {} for recipient {} with subject {}",
+                emailTopicName, emailRequest.to(), emailRequest.subject());
         kafkaTemplate.send(emailTopicName, emailRequest.to(), emailRequest)
                 .whenComplete((result, ex) -> {
                     if (ex != null) {

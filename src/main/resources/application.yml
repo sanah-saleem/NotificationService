@@ -36,6 +36,11 @@ spring:
 notification:
   topics:
     email: notification-email-topic
+  otp:
+    length: 6
+    ttl-seconds: 300
+    max-attempts: 5
+    max-per-day: 5
 
 management:
   endpoints:

@@ -32,6 +32,7 @@ public class NotificationDispatcher {
             log.error("No notification channel registered for type {}", type);
             throw new IllegalArgumentException("Unsupported notification channel: " + type);
         }
+        log.info("Dispatching notification via channel={} to destination={}", type, message.destination());
         channel.send(message);
     }
 
