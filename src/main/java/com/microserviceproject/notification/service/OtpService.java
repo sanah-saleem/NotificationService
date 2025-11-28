@@ -23,22 +23,24 @@ public class OtpService {
     private static final int MAX_ATTEMPTS = 5;
 
     private final StringRedisTemplate redisTemplate;
-    private final EmailNotificationProducer emailNotificationProducer;
+    private final NotificationDispatcher notificationDispatcher;
     private final SecureRandom secureRandom = new SecureRandom();
 
     public OtpService(StringRedisTemplate redisTemplate,
-                      EmailNotificationProducer emailNotificationProducer) {
+                      NotificationDispatcher notificationDispatcher) {
         this.redisTemplate = redisTemplate;
-        this.emailNotificationProducer = emailNotificationProducer;
+        this.notificationDispatcher = notificationDispatcher;
     }
 
     public void requestOtp(OtpRequest request) {
         String otpCode = generateOtpCode();
         String key = buildRedisKey(request.purpose(), request.userId());
+        NotificationChannelType channelType =
+                request.channelType() != null ? request.channelType() : NotificationChannelType.EMAIL;
 
         Map<String, String> data = new HashMap<>();
         data.put("code", otpCode);
-        data.put("channel", "EMAIL");
+        data.put("channel", channelType.name());
         data.put("destination", request.email());
         data.put("attempts", "0");
 
@@ -52,8 +54,11 @@ public class OtpService {
         String body = String.format("Your OTP for %s is: %s%nThis code is valid for %d minutes.",
                 request.purpose(), otpCode, OTP_TTL.toMinutes());
 
-        EmailRequest emailRequest = new EmailRequest(request.email(), subject, body);
-        emailNotificationProducer.sendEmailNotification(emailRequest);
+        NotificationMessage message = new NotificationMessage(
+                channelType, request.email(), subject,
+                body, null // metadata optional
+        );
+        notificationDispatcher.dispatch(message);
     }
 
     public OtpVerificationResponse verifyOtp(OtpVerifyRequest request) {
