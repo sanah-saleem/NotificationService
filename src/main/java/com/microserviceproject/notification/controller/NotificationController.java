@@ -1,8 +1,7 @@
 package com.microserviceproject.notification.controller;
 
-import com.microserviceproject.notification.dto.EmailRequest;
+import com.microserviceproject.notification.model.EmailRequest;
 import com.microserviceproject.notification.integration.EmailNotificationProducer;
-import com.microserviceproject.notification.service.EmailService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;

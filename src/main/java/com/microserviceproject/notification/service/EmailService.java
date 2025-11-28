@@ -1,6 +1,6 @@
 package com.microserviceproject.notification.service;
 
-import com.microserviceproject.notification.dto.EmailRequest;
+import com.microserviceproject.notification.model.EmailRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;

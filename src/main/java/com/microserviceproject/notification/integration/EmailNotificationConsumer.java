@@ -1,6 +1,6 @@
 package com.microserviceproject.notification.integration;
 
-import com.microserviceproject.notification.dto.EmailRequest;
+import com.microserviceproject.notification.model.EmailRequest;
 import com.microserviceproject.notification.service.EmailService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
