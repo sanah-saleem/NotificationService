@@ -1,116 +1,187 @@
+# 📬 Notification Service
 
-# 📬 Notification Service (Java Spring Boot, Kafka, Redis, Docker)
-
-A scalable, channel-agnostic **Notification Microservice** built with **Spring Boot**, **Kafka**, **Redis**, and **Docker**.
-Designed to handle **email notifications**, **OTP generation/verification**, and **future communication channels** (SMS, WhatsApp, Push, etc.).
+**Java Spring Boot • Kafka • Redis • Docker**
+A scalable, channel-agnostic notification microservice for delivering emails, OTPs, and future channels like SMS, WhatsApp, and Push notifications.
 
 ---
 
-# 🚀 Features
+# 🚀 Overview
 
-### ✅ **1. Email Notification (Async)**
+This Notification Service handles:
 
-* REST API for sending email notifications.
-* Enqueued into **Kafka**, processed asynchronously by consumers.
-* SMTP integration (using Mailhog in development).
+* **Email notifications** (async delivery via Kafka)
+* **OTP generation & verification** using Redis
+* **Channel-agnostic architecture** (Strategy Pattern)
+* **Event-driven processing** (Kafka producers & consumers)
+* **Future expansion** (add SMS, WhatsApp, Push easily)
 
-### ✅ **2. OTP System (Secure & Stateless)**
+It runs fully containerized using **Docker** and supports both local development and multi-service architectures.
 
-* OTP generation with configurable TTL, length, and attempts.
-* Stored in **Redis** (no database needed).
+---
+
+# ✨ Features
+
+### ✅ 1. Email Notifications (Asynchronous)
+
+* REST endpoint to send email notifications
+* Published to Kafka → processed by consumer
+* SMTP integration using Mailhog (for local testing)
+* Fully decoupled: caller doesn’t wait for delivery
+
+---
+
+### ✅ 2. OTP System (Secure & Stateless)
+
+* Generates OTP with configurable:
+
+  * Length
+  * TTL
+  * Maximum attempts
+* Stored in Redis (no database required)
 * Supports multiple OTP purposes:
 
   * `PASSWORD_RESET`
   * `EMAIL_VERIFICATION`
-* OTP verification endpoint with:
+* Verification includes:
 
   * Attempt tracking
   * Expiry validation
-  * Auto-deletion on success/failure
+  * Auto-delete on success/failure
 
-### ✅ **3. Channel-Agnostic Architecture**
+---
 
-Built using the **Strategy Pattern**:
+### ✅ 3. Channel-Agnostic Architecture
 
-* `NotificationDispatcher` routes messages to the correct channel.
-* `NotificationChannel` interface for defining channels.
-* Implementations:
+Built using **Strategy Pattern**:
 
-  * `EmailNotificationChannel` (ready)
-  * Future support for:
+```
+NotificationDispatcher → NotificationChannel → Channel Implementations
+```
 
-    * SMS (Twilio, AWS SNS)
-    * WhatsApp (Meta API / Twilio)
-    * Push Notifications (FCM, APN)
+Implemented:
 
-### ✅ **4. Kafka-Based Delivery Pipeline**
+* Email channel
 
-* Producers publish notification messages.
-* Consumers listen and perform actual delivery.
-* Easy to add:
+Future Ready:
+
+* SMS (Twilio / AWS SNS)
+* WhatsApp (Meta / Twilio)
+* Push Notifications (FCM / APNs)
+
+---
+
+### ✅ 4. Kafka-Based Delivery Pipeline
+
+* Producers publish events
+* Consumers process and deliver notifications
+* Supports:
 
   * Retries
-  * Dead-letter topics
+  * Dead-letter queues (future)
   * Failure alerts
 
 ---
 
-# 🧩 Architecture
+# 🧩 High-Level Architecture
 
 ```
-User Management Service
-         |
-         | REST API calls (OTP request/verify)
-         v
-Notification Service (This Project)
-         |
-         | dispatch()
-         v
-Notification Channels (Email, SMS, WhatsApp, ...)
-         |
-         | Kafka producer
-         v
-Kafka Topic (notification-email-topic)
-         |
-         | consumer
-         v
-Email Sender → SMTP → Inbox/Mailhog
+   Client / Other Services
+               |
+               v
+   REST → Notification API
+               |
+               v
+      Notification Dispatcher
+               |
+               v
+         Notification Channels
+               |
+               v
+           Kafka Topic
+               |
+               v
+     Kafka Consumer → Email Sender
+               |
+               v
+   SMTP → Mailhog → Inbox
 ```
 
 ---
 
-# 🗄 Technology Stack
+# 🗄 Tech Stack
 
-### **Backend**
+### Backend
 
 * Java 17
-* Spring Boot 3.x
+* Spring Boot 3
+* Spring Kafka
+* Spring Mail
 * Spring Web
 * Spring Validation
-* Spring Mail
-* Spring Kafka
 * Spring Data Redis
 
-### **Infrastructure**
+### Infrastructure
 
-* Kafka (KRaft mode – no ZooKeeper)
+* Kafka (KRaft mode — no ZooKeeper)
 * Redis
-* Mailhog (local email testing)
+* Mailhog
 * Docker & Docker Compose
 
-### **Design Patterns**
+### Design Patterns
 
-* Strategy Pattern (Notification Channels)
+* Strategy Pattern
 * Dispatcher Pattern
-* Asynchronous event-driven architecture
+* Event-driven architecture
 
 ---
 
-# 📡 APIs
+# 🐳 Running the Service (Docker)
 
-## **1. Send Email Notification**
+This project includes a `docker-compose.yml` that starts:
 
-`POST /api/notifications/email`
+| Service              | Purpose                   |
+| -------------------- | ------------------------- |
+| Notification Service | Your Spring Boot app      |
+| Kafka (KRaft)        | Notification queue        |
+| Redis                | OTP storage               |
+| Mailhog              | Local SMTP server & inbox |
+
+## 1️⃣ Clone the repository
+
+```bash
+git clone https://github.com/sanah-saleem/NotificationService.git
+cd NotificationService
+```
+
+## 2️⃣ Start all services
+
+```bash
+docker compose up
+```
+
+Or detached mode:
+
+```bash
+docker compose up -d
+```
+
+### Once running:
+
+* Notification API → `http://localhost:8082`
+* Mailhog UI → `http://localhost:8025`
+* SMTP server → `localhost:1025`
+
+---
+
+# 📡 API Endpoints
+
+## 1. Send Email Notification
+
+```
+POST /api/notifications/email
+```
+
+### Request Body
 
 ```json
 {
@@ -120,22 +191,34 @@ Email Sender → SMTP → Inbox/Mailhog
 }
 ```
 
-## **2. Request OTP**
+---
 
-`POST /api/otp/request`
+## 2. Request OTP
+
+```
+POST /api/otp/request
+```
+
+### Request Body
 
 ```json
 {
   "userId": "12345",
   "purpose": "PASSWORD_RESET",
   "email": "user@example.com",
-  "channelType": "EMAIL"  // optional (defaults to EMAIL)
+  "channelType": "EMAIL"
 }
 ```
 
-## **3. Verify OTP**
+---
 
-`POST /api/otp/verify`
+## 3. Verify OTP
+
+```
+POST /api/otp/verify
+```
+
+### Request Body
 
 ```json
 {
@@ -145,7 +228,7 @@ Email Sender → SMTP → Inbox/Mailhog
 }
 ```
 
-**Possible Responses:**
+### Responses
 
 * `VALID`
 * `INVALID`
@@ -154,171 +237,88 @@ Email Sender → SMTP → Inbox/Mailhog
 
 ---
 
+# 🔧 Configuration
+
+All settings are configurable via `application.yml` or environment variables:
+
+| Setting                        | Purpose          |
+| ------------------------------ | ---------------- |
+| `notification.otp.length`      | OTP digit length |
+| `notification.otp.ttlSeconds`  | Expiry time      |
+| `notification.otp.maxAttempts` | Max attempts     |
+| `spring.kafka.*`               | Kafka settings   |
+| `spring.data.redis.*`          | Redis settings   |
+| `spring.mail.*`                | SMTP settings    |
+
+---
+
 # 🔐 Security (Planned Enhancements)
 
-### 1. **JWT Validation**
-
-* Inter-service communication secured using JWT
-* User management service signs tokens
-* Notification service validates signature & claims
-
-### 2. **IP Whitelisting**
-
-* Only allow access from:
-
-  * API Gateway
-  * Internal services
-  * Dev tools (optional)
-
-### 3. **API Keys / Rate Limiting**
-
-* Especially useful for notification bursts
-* Redis can be reused for tracking rate limits
-
----
-
-# 🔧 Configuration (Planned)
-
-Configurable through `application.yml` or environment variables:
-
-* OTP length
-* OTP TTL (minutes)
-* Max OTP attempts
-* Max OTP requests per user per day
-* Email templates (folder-based or Thymeleaf)
-* Kafka retry policies
-* Channel-specific configuration (SMS, WhatsApp)
-
----
-
-# 🎨 Email Templates (Planned)
-
-Move from plain text → real HTML templates.
-
-**Goals:**
-
-* Thymeleaf / FreeMarker support
-* Template variables:
-
-  * `{otp}`
-  * `{username}`
-  * `{purpose}`
-  * `{expiry}`
-* Custom branding for production
-
----
-
-# ☸ Resilience & Observability (Planned)
-
-### **Kafka Resilience**
-
-* Retries with backoff
-* Dead-letter topic: `notification-email-dlt`
-* Alerts for delivery failures
-
-### **Email Resilience**
-
-* Auto retry for SMTP downtime
-* Fallback SMTP provider (optional)
-
-### **Monitoring**
-
-* Actuator health:
-
-  * Kafka connection
-  * Redis connection
-  * SMTP connection
-* Prometheus metrics (optional)
-* Distributed tracing with OpenTelemetry
+* JWT validation for inter-service communication
+* IP whitelisting for internal-only access
+* Rate limiting (Redis-based)
+* API keys for external use
 
 ---
 
 # 📚 Documentation (Planned)
 
-Enable auto-generated API docs using:
-
-```
-springdoc-openapi-starter-webmvc-ui
-```
-
-Then Swagger UI will be available at:
-
-```
-/swagger-ui.html
-```
+* Auto-generated API docs with Swagger/OpenAPI
+* `/swagger-ui.html` endpoint
 
 ---
 
-# 🐳 Docker Setup
+# 🎨 Email Templates (Planned)
 
-### Current containers:
+Move from plain text → HTML templates using:
 
-| Service              | Purpose                 |
-| -------------------- | ----------------------- |
-| Kafka (KRaft)        | Notification queue      |
-| Redis                | OTP store               |
-| Mailhog              | Local email inbox       |
-| Notification Service | Spring Boot application |
+* Thymeleaf
+* FreeMarker
 
-A sample `docker-compose.yml` will include:
+---
 
-* Kafka KRaft
-* Redis
-* Mailhog
-* Notification service image
-* Networks & volumes
+# ☸ Resilience & Monitoring (Planned)
+
+* Kafka retry policies
+* Dead-letter topics
+* SMTP fallback provider
+* Actuator health checks
+* Prometheus / Grafana metrics
+* Distributed tracing with OpenTelemetry
 
 ---
 
 # 🧪 Testing Strategy (Planned)
 
-### **Unit Tests**
-
-* OTP generation
-* Redis logic
-* Attempt increment logic
-* Dispatcher and channel routing
-
-### **Integration Tests**
-
-* Embedded Kafka (spring-kafka-test)
+* Unit tests for OTP logic, Redis operations
+* Integration tests with Embedded Kafka
 * Testcontainers:
 
-  * Redis container
-  * Kafka container
-  * Mailhog container
-
-### **End-to-End Tests**
-
-* Start all services via docker-compose
-* Call `/otp/request` → observe email in Mailhog
-* Call `/otp/verify` → expect `VALID`
+  * Redis
+  * Kafka
+  * Mailhog
+* End-to-end tests using full docker-compose
 
 ---
 
 # 🧭 Roadmap
 
-* [ ] Integrate with User Management Service
-* [ ] Add JWT validation
-* [ ] Add IP whitelisting
-* [ ] Add OpenAPI/Swagger documentation
-* [ ] Add HTML templates for emails
-* [ ] Add SMS channel
-* [ ] Add WhatsApp channel
-* [ ] Add Kafka DLQ + retry policies
-* [ ] Add rate limiting for OTP
-* [ ] Add environment-specific configuration
-* [ ] Add monitoring & metrics
-* [ ] Add full E2E tests via Testcontainers
+* Integrate fully with User Management service
+* Add SMS + WhatsApp channels
+* Add HTML email templates
+* Add rate limiting
+* Add OpenAPI docs
+* Add monitoring & tracing
+* Add DLQ support
 
 ---
 
 # 🏁 Summary
 
-This Notification Service is designed to be:
+This Notification Service is:
 
-* **Scalable** – Kafka + Redis enables high throughput
-* **Extendable** – Add any future channel easily
-* **Secure** – Upcoming JWT + IP whitelisting
-* **Maintainable** – Clear separation of concerns
-* **Production-ready** – Resilience patterns planned
+✔ Scalable — Kafka + Redis
+✔ Extendable — new channels plug in easily
+✔ Maintainable — clean architecture + patterns
+✔ Production-ready — event-driven, async, containerized
+✔ Recruiter-friendly — easy to run and test
